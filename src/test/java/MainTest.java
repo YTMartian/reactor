@@ -58,20 +58,16 @@ public class MainTest {
                 .doOnRequest(r -> {
                     System.out.println("main each request consumer invoke: " + r);
                 })
-                .flatMap(i -> processAsync(value, i).doOnRequest(r -> {
+                .flatMap(i -> Mono.fromCallable(() -> {
+                    Thread.sleep(10);//模拟耗时操作
+                    return value * i;
+                }).doOnRequest(r -> {
                     System.out.println("inner each request consumer invoke: " + r);
                 }), 3, 2)
                 .doOnSubscribe(r -> r.request(0))
         );
         result.subscribe(i -> {
             System.out.println("+++" + i);
-        });
-    }
-
-    private Mono<Integer> processAsync(int value, int index) {
-        return Mono.fromCallable(() -> {
-            Thread.sleep(10);//模拟耗时操作
-            return value * index;
         });
     }
 }
