@@ -37,28 +37,18 @@ public class MainTest {
 
     @Test
     public void timeoutTest() {
-        var a = timeout();
-        a.subscribe(
-                result -> log.info("result: {}", result),
-                error -> log.error("error: ", error)
-        );
-    }
-
-    Mono<String> timeout() {
-        Mono<String> delayMono = Mono.fromRunnable(this::sleep);
-        return delayMono.timeout(Duration.ofSeconds(8)).onErrorResume(e -> {
+        Mono<String> delayMono = Mono.fromCallable(() -> {
+            Thread.sleep(5000);
+            return null;
+        });
+        Mono<String> mono = delayMono.timeout(Duration.ofSeconds(8)).onErrorResume(e -> {
             log.error("timeoutTest error: ", e);
             return Mono.error(e);
         });
-    }
-
-    String sleep() {
-        try {
-            Thread.sleep(5000);
-        } catch (Exception e) {
-            log.error("sleep exception: ", e);
-        }
-        return "success";
+        mono.subscribe(
+                result -> log.info("result: {}", result),
+                error -> log.error("error: ", error)
+        );
     }
 
     @Test
@@ -68,18 +58,18 @@ public class MainTest {
                 .doOnRequest(r -> {
                     System.out.println("main each request consumer invoke: " + r);
                 })
-                .flatMap(i->processAsync(value, i).doOnRequest(r->{
-                   System.out.println("inner each request consumer invoke: " + r);
-                }), 3,2)
-                .doOnSubscribe(r->r.request(0))
+                .flatMap(i -> processAsync(value, i).doOnRequest(r -> {
+                    System.out.println("inner each request consumer invoke: " + r);
+                }), 3, 2)
+                .doOnSubscribe(r -> r.request(0))
         );
-        result.subscribe(i->{
+        result.subscribe(i -> {
             System.out.println("+++" + i);
         });
     }
 
     private Mono<Integer> processAsync(int value, int index) {
-        return Mono.fromCallable(()->{
+        return Mono.fromCallable(() -> {
             Thread.sleep(10);//模拟耗时操作
             return value * index;
         });
