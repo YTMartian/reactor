@@ -64,7 +64,6 @@ public class MainTest {
                 }).doOnRequest(r -> {
                     System.out.println("inner each request consumer invoke: " + r);
                 }), 3, 2)
-                .doOnSubscribe(r -> r.request(0))
         );
         result.subscribe(i -> {
             System.out.println("+++" + i);
