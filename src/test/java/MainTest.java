@@ -178,5 +178,31 @@ public class MainTest {
                         error->System.out.println("fromRunnable error: " + error)
                 );
     }
+
+    /**
+    * reactor形式的try-with-resource
+    */
+
+    @Test
+    public void reactorTryWithResource() {
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();) {
+            log.info("size1: {}", byteArrayOutputStream.size());
+        } catch (IOException e) {
+            log.error("error1: ", e);
+        }
+
+        Flux.using(
+                        ByteArrayOutputStream::new,
+                        byteArrayOutputStream -> {
+                            log.info("size2: {}", byteArrayOutputStream.size());
+                            return Flux.empty();
+                        },
+                        ByteArrayOutputStream::close
+                )
+                .subscribe(
+                        result -> log.info("result: {}", result),
+                        error -> log.info("error: ", error)
+                );
+    }
     
 }
