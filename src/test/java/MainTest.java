@@ -139,7 +139,11 @@ public class MainTest {
     */
     @Test
     public void onErrorResumeAndOnErrorReturnTest() {
-        Mono.fromCallable(this::testRuntimeException)
+        Function<Integer, Integer> fun = value->{
+            throw new RuntimeException("test");
+        };
+
+        Mono.fromCallable(()->fun.apply(1))
                 .onErrorResume(res->{System.out.println("yes");return Mono.just(2);})
                 .onErrorReturn(3)
                 .subscribe(
@@ -147,7 +151,7 @@ public class MainTest {
                         error->System.out.println("error: " + error)
                 );
 
-        Mono.fromCallable(this::testException)
+        Mono.fromCallable(()->fun.apply(1))
                 .onErrorReturn(3)
                 .onErrorResume(res->{System.out.println("yes");return Mono.just(2);})
                 .subscribe(
@@ -156,7 +160,23 @@ public class MainTest {
                 );
     }
 
-     int testRuntimeException() throws RuntimeException {
-        throw new RuntimeException("test runtime exception");
+    /**
+    * fromCallable和fromRunnable区别
+    */
+    @Test
+    public void fromCallableAndFromRunnable() {
+        Function<Integer, Integer> fun = value-> value * value;
+
+        Mono.fromCallable(()->fun.apply(2))
+                .subscribe(
+                        result->System.out.println("fromCallable result: " + result),
+                        error->System.out.println("fromCallable error: " + error)
+                );
+        Mono.fromRunnable(()->fun.apply(3))
+                .subscribe(
+                        result->System.out.println("fromRunnable result: " + result),
+                        error->System.out.println("fromRunnable error: " + error)
+                );
     }
+    
 }
