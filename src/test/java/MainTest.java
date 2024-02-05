@@ -70,6 +70,9 @@ public class MainTest {
         });
     }
 
+    /**
+    * Flux的map和handle区别
+    */
     @Test
     public void mapAndHandleTest() {
         // 用于有条件地处理元素，允许选择性地发送新的元素或标记结束
@@ -96,5 +99,64 @@ public class MainTest {
                         result -> System.out.println("map result: " + result),
                         error -> System.out.println("map error: " + error)
                 );
+    }
+
+    /**
+    * 多值onErrorResume
+    */
+    @Test
+    public void multiValueOnErrorResume() {
+        Flux.just(1, 2, 3)
+                .map(t -> {
+                    if (t == 2) {
+                        throw new RuntimeException("test");
+                    }
+                    return t;
+                })
+                .onErrorResume(e -> Flux.just(11, 12, 13))
+                .subscribe(
+                        result -> System.out.println("result: " + result),
+                        error -> System.out.println("error: " + error)
+                );
+        // or
+        Flux.just(1, 2, 3)
+                .handle((t, sink) -> {
+                    if (t == 2) {
+                        sink.error(new RuntimeException("test"));
+                        return;
+                    }
+                    sink.next(t);
+                })
+                .onErrorResume(e -> Flux.just(11, 12, 13))
+                .subscribe(
+                        result -> System.out.println("result: " + result),
+                        error -> System.out.println("error: " + error)
+                );
+    }
+
+    /**
+    * onErrorResume和onErrorReturn区别（流的执行跟顺序有关）
+    */
+    @Test
+    public void onErrorResumeAndOnErrorReturnTest() {
+        Mono.fromCallable(this::testRuntimeException)
+                .onErrorResume(res->{System.out.println("yes");return Mono.just(2);})
+                .onErrorReturn(3)
+                .subscribe(
+                        result->System.out.println("result: " + result),
+                        error->System.out.println("error: " + error)
+                );
+
+        Mono.fromCallable(this::testException)
+                .onErrorReturn(3)
+                .onErrorResume(res->{System.out.println("yes");return Mono.just(2);})
+                .subscribe(
+                        result->System.out.println("result: " + result),
+                        error->System.out.println("error: " + error)
+                );
+    }
+
+     int testRuntimeException() throws RuntimeException {
+        throw new RuntimeException("test runtime exception");
     }
 }
