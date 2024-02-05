@@ -69,4 +69,32 @@ public class MainTest {
             System.out.println("+++" + i);
         });
     }
+
+    @Test
+    public void mapAndHandleTest() {
+        // 用于有条件地处理元素，允许选择性地发送新的元素或标记结束
+        Flux.just(1, 2, 3)
+                .handle((t, sink) -> {
+                    if (t % 2 == 0) {
+                        sink.next(t);
+                    }
+                })
+                .subscribe(
+                        result -> System.out.println("handle result: " + result),
+                        error -> System.out.println("handle error: " + error)
+                );
+
+        // map用于对每个元素进行转换，返回一个新的 Flux
+        Flux.just(1, 2, 3)
+                .map(t -> {
+                    if (t % 2 == 0) {
+                        return t;
+                    }
+                    return t;
+                })
+                .subscribe(
+                        result -> System.out.println("map result: " + result),
+                        error -> System.out.println("map error: " + error)
+                );
+    }
 }
