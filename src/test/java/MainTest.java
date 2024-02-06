@@ -2,10 +2,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 
 @Slf4j
@@ -191,18 +195,18 @@ public class MainTest {
             log.error("error1: ", e);
         }
 
-        Flux.using(
-                        ByteArrayOutputStream::new,
-                        byteArrayOutputStream -> {
-                            log.info("size2: {}", byteArrayOutputStream.size());
-                            return Flux.empty();
-                        },
-                        ByteArrayOutputStream::close
-                )
-                .subscribe(
-                        result -> log.info("result: {}", result),
-                        error -> log.info("error: ", error)
-                );
+//        Flux.using(
+//                        ByteArrayOutputStream::new,
+//                        byteArrayOutputStream -> {
+//                            log.info("size2: {}", byteArrayOutputStream.size());
+//                            return Flux.empty();
+//                        },
+//                        ByteArrayOutputStream::close
+//                )
+//                .subscribe(
+//                        result -> log.info("result: {}", result),
+//                        error -> log.info("error: ", error)
+//                );
     }
 
     /**
