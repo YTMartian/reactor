@@ -210,22 +210,30 @@ public class MainTest {
     */
     @Test
     public void parallelAndConcurrency() {
+        // 并发起作用
         Flux.range(1, 5)
                 .parallel(5)
                 .runOn(Schedulers.boundedElastic())
-                .flatMap(i -> {
+                .flatMap(i -> Mono.fromRunnable(() -> {
                     log.info("parallel: {}", i);
                     sleep(1000);
-                    return Mono.empty();
-                })
+                }))
                 .subscribe();
 
+        // 并发起作用
         Flux.range(1, 5)
-                .flatMap(i -> {
-                    log.info("concurrency: {}", i);
+                .flatMap(i -> Mono.fromRunnable(() -> {
+                    log.info("concurrency-1: {}", i);
                     sleep(1000);
-                    return Mono.empty();
-                }, 5, 3)
+                }).subscribeOn(Schedulers.boundedElastic()), 5, 3)
+                .subscribe();
+
+        // 并发不起作用
+        Flux.range(1, 5)
+                .flatMap(i -> Mono.fromRunnable(() -> {
+                    log.info("concurrency-0: {}", i);
+                    sleep(1000);
+                }), 5, 3)
                 .subscribeOn(Schedulers.boundedElastic())
                 .subscribe();
 
