@@ -204,5 +204,41 @@ public class MainTest {
                         error -> log.info("error: ", error)
                 );
     }
+
+    /**
+    * parallel和flatmap的concurrency测试
+    */
+    @Test
+    public void parallelAndConcurrency() {
+        Flux.range(1, 5)
+                .parallel(5)
+                .runOn(Schedulers.boundedElastic())
+                .flatMap(i -> {
+                    log.info("parallel: {}", i);
+                    sleep(1000);
+                    return Mono.empty();
+                })
+                .subscribe();
+
+        Flux.range(1, 5)
+                .flatMap(i -> {
+                    log.info("concurrency: {}", i);
+                    sleep(1000);
+                    return Mono.empty();
+                }, 5, 3)
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe();
+
+        sleep(10000); //等待执行结束
+    }
+
+    void sleep(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (Exception ignored) {
+
+        }
+    }
+    
     
 }
