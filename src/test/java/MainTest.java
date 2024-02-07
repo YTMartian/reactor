@@ -304,6 +304,30 @@ public class MainTest {
 
         sleep(100000);
     }
+
+    /**
+    * Flux.generate用法
+    */
+
+    void fluxGenerateTest() {
+        Flux.generate(
+                ()->0,
+                (value, sink)->{
+                    log.info("value: {}", value);
+                    sleep(1000);
+                    sink.next(value + 1); // 这个值给后续流
+                    return value + 2; // 这个值给当前方法
+                }
+        )
+                .flatMap(i->{
+                    log.info("i: {}", i);
+                    return Mono.empty();
+                })
+                .subscribe(
+                result->log.info("result: {}", result),
+                error->{}
+        );
+    }
     
     
     
