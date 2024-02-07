@@ -251,6 +251,60 @@ public class MainTest {
 
         }
     }
+
+    /**
+    * retryWhen重试策略
+    */
+    public void retryWhenTest() {
+        // 无限重试（立即重试）
+        Flux.range(1,3)
+                .handle((i, sink)->{
+                    if(i == 2) {
+                        sink.error(new RuntimeException("test"));
+                    }
+                    sink.next(i);
+                })
+                .retry()
+                .subscribe(
+                        result->log.info("result: {}", result),
+                        error->log.error("error: ", error)
+                );
+
+        // 固定延迟重试
+        Flux.range(1,3)
+                .handle((i, sink)->{
+                    if(i == 2) {
+                        sink.error(new RuntimeException("test"));
+                    }
+                    sink.next(i);
+                })
+                .retryWhen(Retry.fixedDelay(5, Duration.ofSeconds(1)))
+                .subscribe(
+                        result->log.info("result: {}", result),
+                        error->log.error("error: ", error)
+                );
+
+        // 指数补偿重试策略
+        Flux.range(1,3)
+                .handle((i, sink)->{
+                    if(i == 2) {
+                        sink.error(new RuntimeException("test"));
+                    }
+                    sink.next(i);
+                })
+                .retryWhen(
+                        Retry.backoff(5, Duration.ofSeconds(1)) // 第一次重试间隔时间
+                                .maxBackoff(Duration.ofSeconds(7)) // 最大重试间隔时间
+                                .onRetryExhaustedThrow((__, retrySignal) -> retrySignal.failure()) // 重试次数耗尽时抛出异常
+                )
+                .subscribe(
+                        result->log.info("result: {}", result),
+                        error->log.error("error: ", error)
+                );
+
+        sleep(100000);
+    }
+    
     
     
 }
