@@ -343,7 +343,20 @@ public class MainTest {
                 })
                 .subscribe();
     }
-    
+
+    /**
+    * flux.interval用法
+    */
+    @Test
+    public void intervalTest() {
+        // 每3s执行一次
+        Flux<Long> interval = Flux.interval(Duration.ofSeconds(3));
+        interval.subscribe(event -> {
+            log.info("triggered at: {}, time: {}s", event, new Date().getTime() / 1000);
+        });
+
+        interval.blockLast();
+    }
     
     
     
