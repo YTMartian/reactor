@@ -328,6 +328,22 @@ public class MainTest {
                 error->{}
         );
     }
+
+    /**
+    * filter用法
+    */
+    @Test
+    public void filterTest() {
+        Flux.range(1,3)
+                .filter(i->{
+                    return i == 2;
+                })
+                .doOnNext(i->{
+                    log.info("value: {}", i);
+                })
+                .subscribe();
+    }
+    
     
     
     
