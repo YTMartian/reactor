@@ -357,6 +357,24 @@ public class MainTest {
 
         interval.blockLast();
     }
+
+    /**
+    *非reactor，测试另一种超时方式
+    */
+    @Test
+    public void completableFutureTest(){
+        CompletableFuture.supplyAsync(() -> {
+                    sleep(5000);
+                    return 666;
+                })
+                .orTimeout(4, TimeUnit.SECONDS)
+                .whenComplete((result, exception) -> {
+                    log.info("result: {}", result);
+                    if (exception != null) {
+                        log.info("exception: ", exception);
+                    }
+                }).join();
+    }
     
     
     
