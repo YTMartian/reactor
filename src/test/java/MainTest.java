@@ -42,7 +42,7 @@ public class MainTest {
     @Test
     public void timeoutTest() {
         Mono<String> delayMono = Mono.fromCallable(() -> {
-            Thread.sleep(5000);
+            sleep(5000);
             return null;
         });
         Mono<String> mono = delayMono.timeout(Duration.ofSeconds(8)).onErrorResume(e -> {
